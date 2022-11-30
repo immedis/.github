@@ -12,9 +12,9 @@ on:
         required: true
         type: string
     secrets:
-      packaging_nuget_username:
+      aws_access_key_id:
         required: true
-      github_packaging_nuget_pat:
+      aws_secret_access_key:
         required: true
 jobs:
   build_nugets:
@@ -24,13 +24,25 @@ jobs:
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.aws_access_key_id }}
+          aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
+          aws-region: eu-west-1
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: ${{inputs.dotnet_version}}
+      - name: Get Secrets from AWS
+        uses: abhilash1in/aws-secrets-manager-action@v2.1.0
+        with:
+          secrets: |
+            github/packaging/nuget
+          parse-json: true
       - name: Push ${{matrix.nugets.name}}
         run: |
-          dotnet nuget update source ${{ inputs.nuget_feedname }} --username "${{secrets.packaging_nuget_username}}" --password "${{secrets.github_packaging_nuget_pat}}" --store-password-in-clear-text
+          dotnet nuget update source github --username "${GITHUB_PACKAGING_NUGET_USERNAME}" --password "${GITHUB_PACKAGING_NUGET_PAT}" --store-password-in-clear-text
           dotnet restore "${{ inputs.csprj }}"
           dotnet build --no-restore -c ${BUILD_CONFIG} "${{ inputs.csprj }}"
           dotnet pack --no-build -c ${BUILD_CONFIG} --output ./nuget "${{ inputs.csprj }}"
