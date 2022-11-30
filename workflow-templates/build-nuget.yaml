@@ -1,38 +1,33 @@
-name: Build Nuget
+name: Build Nugets
+run-name: 🐥 ${{ github.actor }} triggered nugget push on ${{ github.ref_name }}
 on:
-  workflow_call:
-    inputs:
-      nuget_feedname:
-        required: true
-        type: string
-      csprj:
-        required: true
-        type: string
-      dotnet_version:
-        required: true
-        type: string
-    secrets:
-      packaging_nuget_username:
-        required: true
-      github_packaging_nuget_pat:
-        required: true
+  workflow_dispatch:
+  push:
+    paths:
+    # List of CS PROJECTS TO FILTER
+      - 'path to csproj'
+    branches:
+      - 'main'
+      - 'master'
+      - 'prod'
+
 jobs:
   build_nugets:
-    name: Build ${{inputs.nuget_feedname}}
-    env:
-      BUILD_CONFIG: 'Release'
-    runs-on: self-hosted
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: ${{inputs.dotnet_version}}
-      - name: Push ${{matrix.nugets.name}}
-        run: |
-          dotnet nuget update source ${{ inputs.nuget_feedname }} --username "${{secrets.packaging_nuget_username}}" --password "${{secrets.github_packaging_nuget_pat}}" --store-password-in-clear-text
-          dotnet restore "${{ inputs.csprj }}"
-          dotnet build --no-restore -c ${BUILD_CONFIG} "${{ inputs.csprj }}"
-          dotnet pack --no-build -c ${BUILD_CONFIG} --output ./nuget "${{ inputs.csprj }}"
-          dotnet nuget push ./nuget/ --api-key "${{secrets.github_packaging_nuget_pat}}" --source "${{ inputs.nuget_feedname }}" --skip-duplicate
+    name: Build ${{matrix.nugets.name}}
+    uses: immedis/.github/.github/workflows/build-nuget.yaml@main
+    with:
+      nuget_feedname: "github"
+      id: ${{ matrix.nugets.id }}
+      csprj: ${{ matrix.nugets.csprj }}
+      dotnet_version: "5.x"
+    secrets:
+      aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    strategy:
+      matrix:
+        nugets:
+          - id: # Idenitifer Name for Package
+            csprj: # Path to CS PROJECT
+          - id: # Idenitifer Name for Package
+            csprj: # Path to CS PROJECT
 
