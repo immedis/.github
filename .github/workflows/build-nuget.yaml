@@ -49,5 +49,5 @@ jobs:
           dotnet restore "${{ inputs.csprj }}"
           dotnet build --no-restore -c ${BUILD_CONFIG} "${{ inputs.csprj }}"
           dotnet pack --no-build -c ${BUILD_CONFIG} --output ./nuget "${{ inputs.csprj }}"
-          dotnet nuget push ./nuget/ --api-key "${{secrets.github_packaging_nuget_pat}}" --source "${{ inputs.nuget_feedname }}" --skip-duplicate
+          dotnet nuget push ./nuget/ --api-key "${GITHUB_PACKAGING_NUGET_PAT}" --source "${{ inputs.nuget_feedname }}" --skip-duplicate
 
