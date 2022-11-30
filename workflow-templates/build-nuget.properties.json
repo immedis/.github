@@ -1,0 +1,4 @@
+{
+  "name": "Build Nuget Workflow",
+  "description": "Template for pushing nuget packages to our nuget feed"
+}
