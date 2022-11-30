@@ -5,6 +5,9 @@ on:
       nuget_feedname:
         required: true
         type: string
+      id:
+        required: true
+        type: string
       csprj:
         required: true
         type: string
@@ -18,7 +21,7 @@ on:
         required: true
 jobs:
   build_nugets:
-    name: Build ${{inputs.nuget_feedname}}
+    name: Build ${{inputs.id}}
     env:
       BUILD_CONFIG: 'Release'
     runs-on: self-hosted
@@ -42,7 +45,7 @@ jobs:
           parse-json: true
       - name: Push ${{matrix.nugets.name}}
         run: |
-          dotnet nuget update source github --username "${GITHUB_PACKAGING_NUGET_USERNAME}" --password "${GITHUB_PACKAGING_NUGET_PAT}" --store-password-in-clear-text
+          dotnet nuget update source ${{inputs.nuget_feedname}} --username "${GITHUB_PACKAGING_NUGET_USERNAME}" --password "${GITHUB_PACKAGING_NUGET_PAT}" --store-password-in-clear-text
           dotnet restore "${{ inputs.csprj }}"
           dotnet build --no-restore -c ${BUILD_CONFIG} "${{ inputs.csprj }}"
           dotnet pack --no-build -c ${BUILD_CONFIG} --output ./nuget "${{ inputs.csprj }}"
